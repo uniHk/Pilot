@@ -1,31 +1,25 @@
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(Pilot VERSION 0.1.0)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(BUILD_SHARED_LIBS OFF)
-
-include(CMakeDependentOption)
-
-# ---- Include guards ----
-if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-  message(
-    FATAL_ERROR
-      "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
-  )
-endif()
-
-set(PILOT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
-set(CMAKE_INSTALL_PREFIX "${PILOT_ROOT_DIR}/bin")
-set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 set(ENGINE_ROOT_DIR "${PILOT_ROOT_DIR}/engine")
 set(THIRD_PARTY_DIR "${ENGINE_ROOT_DIR}/3rdparty")
 set(ENGINE_ASSET_DIR "/asset")
-set(ENGINE_SCHEMA_DIR "/schema")
 
-if(WIN32)
-  add_definitions("/MP")
+option(ENABLE_PHYSICS_DEBUG_RENDERER "Enable Physics Debug Renderer" OFF)
+
+# only support physics debug render at windows platform
+if(NOT WIN32)
+  if(ENABLE_PHYSICS_DEBUG_RENDERER)
+    message(WARNING "Disable Physics Debug Renderer")
+    set(ENABLE_PHYSICS_DEBUG_RENDERER OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
+
+if(ENABLE_PHYSICS_DEBUG_RENDERER)
+  set(JOLT_ASSET_DIR "/jolt-asset")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_options("/MP")
+    set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PilotEditor)
 endif()
 
 set(vulkan_include ${THIRD_PARTY_DIR}/VulkanSDK/include)
